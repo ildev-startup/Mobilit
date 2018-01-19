@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Mobilit</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="signin">Sign In</string>
+    <string name="notRegistered">Not Registered?</string>
+    <string name="signUp">Sign Up</string>
+    <string name="facebook_icon">Facebook Icon</string>
+    <string name="twitter_icon">Twitter Icon</string>
+    <string name="google_icon">Google Icon</string>
+</resources>
