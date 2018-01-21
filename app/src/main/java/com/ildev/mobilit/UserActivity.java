@@ -24,16 +24,7 @@ public class UserActivity extends AppCompatActivity {
         mButtonSignIn = (Button) findViewById(R.id.ButtonSignIn);
         mTextViewSignUp = (TextView) findViewById(R.id.TextViewSignUp);
 
-        // Setting the widths properly
-        setWidths();
     }
 
-    private void setWidths(){
-        int sizeTextEmail = mEditTextEmail.getWidth(); // Size of the TextEmail
-        // TODO: Very which of the solutions is more correct
-//        mButtonSignUp.getLayoutParams().width = sizeTextEmail;
-//        mButtonSignUp.requestLayout();
-        mButtonSignIn.setWidth(sizeTextEmail);
-    }
 
 }
