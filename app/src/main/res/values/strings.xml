@@ -2,8 +2,12 @@
     <string name="app_name">Mobilit</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="fname">First Name</string>
+    <string name="lname">Last Name</string>
     <string name="signin">Sign In</string>
+    <string name="signup">Sign Up</string>
     <string name="notRegistered">Not Registered?</string>
+    <string name="Registered">Already registered?</string>
     <string name="signUp">Sign Up</string>
     <string name="facebook_icon">Facebook Icon</string>
     <string name="twitter_icon">Twitter Icon</string>
