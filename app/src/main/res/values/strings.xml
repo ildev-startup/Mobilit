@@ -8,4 +8,6 @@
     <string name="facebook_icon">Facebook Icon</string>
     <string name="twitter_icon">Twitter Icon</string>
     <string name="google_icon">Google Icon</string>
+    <string name="forgot_email">Forgot your password?</string>
+    <string name="logIn">Or Log In with</string>
 </resources>

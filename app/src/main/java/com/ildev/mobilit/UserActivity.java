@@ -9,7 +9,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 
-
 import static com.ildev.mobilit.utils.Validator.validateEmail;
 import static com.ildev.mobilit.utils.Validator.validatePassword;
 
