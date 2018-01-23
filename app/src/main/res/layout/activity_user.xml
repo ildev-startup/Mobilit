@@ -147,7 +147,7 @@
 
         <GridLayout
             android:id="@+id/GridLayoutIcons"
-            android:layout_width="180dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:background="@android:color/white"
@@ -166,19 +166,24 @@
                 android:contentDescription="@string/google_icon"
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
+                android:scaleType="centerCrop"
                 app:srcCompat="@drawable/common_google_signin_btn_icon_light"
                 tools:layout_editor_absoluteX="0dp"
                 tools:layout_editor_absoluteY="200dp" />
 
             <ImageButton
                 android:id="@+id/imageButtonFacebook"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="60dp"
+                android:layout_height="50dp"
                 android:background="@android:color/white"
                 android:contentDescription="@string/facebook_icon"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                app:srcCompat="@drawable/ic_facebook" />
+                android:cropToPadding="true"
+                android:paddingBottom="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="5dp"
+                android:scaleType="centerCrop"
+                app:srcCompat="@drawable/com_facebook_favicon_blue" />
 
             <ImageButton
                 android:id="@+id/imageButtonTwitter"
@@ -190,6 +195,5 @@
                 android:paddingRight="4dp"
                 app:srcCompat="@drawable/ic_twitter" />
         </GridLayout>
-
     </android.support.constraint.ConstraintLayout>
 </android.support.v4.widget.NestedScrollView>
