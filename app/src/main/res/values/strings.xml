@@ -14,4 +14,6 @@
     <string name="google_icon">Google Icon</string>
     <string name="forgot_email">Forgot your password?</string>
     <string name="logIn">Or Log In with</string>
+    <string name="facebook_app_id">154834031838581</string>
+    <string name="fb_login_protocol_scheme">fb154834031838581</string>
 </resources>
