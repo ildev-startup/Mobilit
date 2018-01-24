@@ -25,5 +25,4 @@ public class Validator {
         return password.length() >= MIN_CHARACTERS;
     }
 
-
 }

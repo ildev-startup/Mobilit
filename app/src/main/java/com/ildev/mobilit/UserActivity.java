@@ -29,7 +29,7 @@ public class UserActivity extends AppCompatActivity {
     private ConstraintLayout mSignInCL, mSignUpCL;
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
     private TextInputLayout mEmailWrapper, mPasswordWrapper;
-    private FirebaseAuth auth;
+    private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +57,7 @@ public class UserActivity extends AppCompatActivity {
                 hideKeyboard(); // Hiding the Keyboard
 
                 // Getting Email and Password
-                String email = mEmailWrapper.getEditText().getText().toString();
+                final String email = mEmailWrapper.getEditText().getText().toString();
                 String password = mPasswordWrapper.getEditText().getText().toString();
 
                 // Setting Errors to null
@@ -90,9 +90,11 @@ public class UserActivity extends AppCompatActivity {
                                     if(!task.isSuccessful()){
                                         // Failing in doing the Login
                                         // TODO: Task failing logic
+                                        Log.e("UserActivity", "Error in authenticating the email " + email);
                                     } else{
                                         // Succesfully done the Login
                                         // TODO: Task succesfully done logic
+                                        Log.v("UserActivity", "Success in authenticating the email " + email);
                                     }
                                 }
                             });
@@ -103,7 +105,7 @@ public class UserActivity extends AppCompatActivity {
     }
 
     /**
-     * OnClickListener to either SignIn and SignUp textViews
+     * OnClick Method to either SignIn and SignUp textViews
      */
     public void onClickSigns(View view) {
         switch (view.getId()){
@@ -120,7 +122,7 @@ public class UserActivity extends AppCompatActivity {
         }
     }
 
-
+    // Method that set visible the SignUp UI
     private void setSignUp(){
         // SignIn ConstraintLayout Gone
         mSignInCL.setVisibility(View.GONE);
@@ -132,6 +134,7 @@ public class UserActivity extends AppCompatActivity {
         mSignUpCL.setVisibility(View.VISIBLE);
     }
 
+    // Method that set visible the SignIn UI
     private void setSignIn(){
         // SignUp ConstraintLayout Gone
         mSignUpCL.setVisibility(View.GONE);
