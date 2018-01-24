@@ -2,10 +2,14 @@ package com.ildev.mobilit;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -22,7 +26,8 @@ public class UserActivity extends AppCompatActivity {
 
     // Declaration of Variables
     private Button mButtonSignIn;
-    private TextView mTextViewSignUp;
+    private ConstraintLayout mSignInCL, mSignUpCL;
+    private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
     private TextInputLayout mEmailWrapper, mPasswordWrapper;
     private FirebaseAuth auth;
 
@@ -33,7 +38,11 @@ public class UserActivity extends AppCompatActivity {
 
         // Getting the references to the UI Elements
         mButtonSignIn = (Button) findViewById(R.id.ButtonSignIn);
-        mTextViewSignUp = (TextView) findViewById(R.id.TextViewSignUp);
+        mSignInCL = (ConstraintLayout) findViewById(R.id.signInConstraintLayout);
+        mSignUpCL = (ConstraintLayout) findViewById(R.id.signUpConstraintLayout);
+        mTextViewForgotPassword = (TextView) findViewById(R.id.textViewForgotPassword);
+        mTextViewSignIn = (TextView) findViewById(R.id.textViewSignIn);
+        mTextViewSignUp = (TextView) findViewById(R.id.textViewSignUp);
         mEmailWrapper = (TextInputLayout) findViewById(R.id.emailWrapper);
         mPasswordWrapper = (TextInputLayout) findViewById(R.id.passwordWrapper);
 
@@ -90,6 +99,49 @@ public class UserActivity extends AppCompatActivity {
                 }
             }
         });
+
+    }
+
+    /**
+     * OnClickListener to either SignIn and SignUp textViews
+     */
+    public void onClickSigns(View view) {
+        switch (view.getId()){
+            case R.id.textViewSignUp:
+                Log.i("Succes", "Setting SignUp view");
+                setSignUp();
+                break;
+            case R.id.textViewSignIn:
+                Log.i("Succes", "Setting SignIn view");
+                setSignIn();
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    private void setSignUp(){
+        // SignIn ConstraintLayout Gone
+        mSignInCL.setVisibility(View.GONE);
+        //Setting top margin
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mTextViewForgotPassword.getLayoutParams();
+        params.setMargins(0, convert_dp_to_px(488), 0, 0);
+        mTextViewForgotPassword.requestLayout();
+        // SignUp ConstraintLayout Visible
+        mSignUpCL.setVisibility(View.VISIBLE);
+    }
+
+    private void setSignIn(){
+        // SignUp ConstraintLayout Gone
+        mSignUpCL.setVisibility(View.GONE);
+        // Setting top margin
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mTextViewForgotPassword.getLayoutParams();
+        params.setMargins(0, convert_dp_to_px(316), 0, 0);
+        mTextViewForgotPassword.setLayoutParams(params);
+        mTextViewForgotPassword.requestLayout();
+        // SignIn ConstraintLayout Visible
+        mSignInCL.setVisibility(View.VISIBLE);
     }
 
 
@@ -101,5 +153,12 @@ public class UserActivity extends AppCompatActivity {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+    }
+
+    // Converter of dp to pixels
+    private int convert_dp_to_px(int dp){
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, dp, getResources()
+                        .getDisplayMetrics());
     }
 }
