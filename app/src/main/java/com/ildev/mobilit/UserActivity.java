@@ -3,6 +3,7 @@ package com.ildev.mobilit;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,13 +16,17 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.ildev.mobilit.utils.User;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.ildev.mobilit.utils.Validator.validateEmail;
 import static com.ildev.mobilit.utils.Validator.validateName;
@@ -32,14 +37,16 @@ public class UserActivity extends AppCompatActivity {
     // Declaration of Variables
     private Button mButtonSignIn, mButtonSingUp;
     private ConstraintLayout mSignInCL, mSignUpCL;
-    private DatabaseReference mDatabase;
+    private CollectionReference mCollectionRef;
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
     private TextInputLayout mEmailWrapper, mPasswordWrapper;   //Singin Variables
     private TextInputLayout mNameWrapper, mLastNameWrapper, mEmailRegisterWrapper, mPasswordRegisterWrapper; //SingUp Variables
     private FirebaseAuth auth = FirebaseAuth.getInstance();
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     private final static String TAG = "UserActivity";
+    private final static String NAME_KEY = "name";
+    private final static String LNAME_KEY = "lname";
+    private  final static String EMAIL_KEY = "email";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +70,7 @@ public class UserActivity extends AppCompatActivity {
         mEmailRegisterWrapper = (TextInputLayout) findViewById(R.id.emailRegisterWrapperSignUp);
         mPasswordRegisterWrapper = (TextInputLayout) findViewById(R.id.passwordWrapperSignUp);
         // Database references
-        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mCollectionRef = FirebaseFirestore.getInstance().collection("users");
 
         // Setting hints
         mEmailWrapper.setHint(getString(R.string.email));
@@ -110,10 +117,14 @@ public class UserActivity extends AppCompatActivity {
                                         // Failing in doing the Login
                                         // TODO: Task failing logic
                                         Log.e("UserActivity", "Error in authenticating the email " + email);
+                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Error in doing the login", Snackbar.LENGTH_SHORT);
+                                        snack.show();
                                     } else{
                                         // Succesfully done the Login
                                         // TODO: Task succesfully done logic
                                         Log.v("UserActivity", "Success in authenticating the email " + email);
+                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"User " +email+ " successfully authenticated", Snackbar.LENGTH_SHORT);
+                                        snack.show();
                                     }
                                 }
                             });
@@ -154,7 +165,7 @@ public class UserActivity extends AppCompatActivity {
                 }
                 else{
                     // Valid Name, Last Name, Email, Password
-                    mAuth.createUserWithEmailAndPassword(email, password)
+                    auth.createUserWithEmailAndPassword(email, password)
                             .addOnCompleteListener(UserActivity.this, new OnCompleteListener<AuthResult>() {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
@@ -167,9 +178,33 @@ public class UserActivity extends AppCompatActivity {
 
                                     }else{
                                         // Task succeed in creating the new user
-                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        FirebaseUser user = auth.getCurrentUser();
                                         String Uid = user.getUid();
-                                        writeNewUser(Uid, new User(name, last_name, email));
+                                        // Data to save
+                                        Map<String, Object> dataToSave = new HashMap<String, Object>();
+                                        dataToSave.put(NAME_KEY, name);
+                                        dataToSave.put(LNAME_KEY, last_name);
+                                        dataToSave.put(EMAIL_KEY, email);
+                                        mCollectionRef.document(Uid)
+                                                .set(dataToSave)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>(){
+
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Log.d(TAG, "User document has been saved");
+                                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Succesfully registered, thanks :D", Snackbar.LENGTH_SHORT);
+                                                        snack.show();
+                                                    }
+                                                })
+                                                .addOnFailureListener(new OnFailureListener() {
+
+                                                    @Override
+                                                    public void onFailure(@NonNull Exception e) {
+                                                        Log.e(TAG, "Error writing the document", e);
+                                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Unable to register the user: " + e.getMessage(), Snackbar.LENGTH_SHORT);
+                                                        snack.show();
+                                                    }
+                                        });
                                     }
                                 }
                             });
@@ -184,7 +219,8 @@ public class UserActivity extends AppCompatActivity {
     public void onStart(){
         super.onStart();
         // Checks if user is signed in (non-null) and update UI accordiingly
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        FirebaseUser currentUser = auth.getCurrentUser();
+
     }
 
     /**
@@ -248,9 +284,5 @@ public class UserActivity extends AppCompatActivity {
                         .getDisplayMetrics());
     }
 
-    // Writing to Database
-    private void writeNewUser(String Uid, User user){
 
-        mDatabase.child("users").child(Uid).setValue(user);
-    }
 }
