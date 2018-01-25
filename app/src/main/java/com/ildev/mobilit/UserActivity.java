@@ -20,15 +20,17 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import static com.ildev.mobilit.utils.Validator.validateEmail;
+import static com.ildev.mobilit.utils.Validator.validateName;
 import static com.ildev.mobilit.utils.Validator.validatePassword;
 
 public class UserActivity extends AppCompatActivity {
 
     // Declaration of Variables
-    private Button mButtonSignIn;
+    private Button mButtonSignIn, mButtonSingUp;
     private ConstraintLayout mSignInCL, mSignUpCL;
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
-    private TextInputLayout mEmailWrapper, mPasswordWrapper;
+    private TextInputLayout mEmailWrapper, mPasswordWrapper;   //Singin Variables
+    private TextInputLayout mNameWrapper, mLastNameWrapper, mEmailRegisterWrapper, mPasswordRegisterWrapper; //SingUp Variables
     private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     @Override
@@ -38,13 +40,20 @@ public class UserActivity extends AppCompatActivity {
 
         // Getting the references to the UI Elements
         mButtonSignIn = (Button) findViewById(R.id.ButtonSignIn);
+        mButtonSingUp = (Button) findViewById(R.id.ButtonSignUp);
         mSignInCL = (ConstraintLayout) findViewById(R.id.signInConstraintLayout);
         mSignUpCL = (ConstraintLayout) findViewById(R.id.signUpConstraintLayout);
         mTextViewForgotPassword = (TextView) findViewById(R.id.textViewForgotPassword);
         mTextViewSignIn = (TextView) findViewById(R.id.textViewSignIn);
         mTextViewSignUp = (TextView) findViewById(R.id.textViewSignUp);
+        //SingIn references
         mEmailWrapper = (TextInputLayout) findViewById(R.id.emailWrapper);
         mPasswordWrapper = (TextInputLayout) findViewById(R.id.passwordWrapper);
+        // SingUp references
+        mNameWrapper = (TextInputLayout) findViewById(R.id.nameWrapper);
+        mLastNameWrapper = (TextInputLayout) findViewById(R.id.lastNameWrapper);
+        mEmailRegisterWrapper = (TextInputLayout) findViewById(R.id.emailRegisterWrapperSignUp);
+        mPasswordRegisterWrapper = (TextInputLayout) findViewById(R.id.passwordWrapperSignUp);
 
         // Setting hints
         mEmailWrapper.setHint(getString(R.string.email));
@@ -99,6 +108,45 @@ public class UserActivity extends AppCompatActivity {
                                 }
                             });
                 }
+            }
+        });
+        // Setting SingUp Button
+        mButtonSingUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                hideKeyboard(); //Hiding the Keyboard
+
+                //Getting name, last name, email and password
+                String name  = mNameWrapper.getEditText().getText().toString();
+                String last_name = mLastNameWrapper.getEditText().getText().toString();
+                final String email = mEmailRegisterWrapper.getEditText().getText().toString();
+                String password = mPasswordRegisterWrapper.getEditText().getText().toString();
+
+                //Setting Errors to null
+                mNameWrapper.setError(null);
+                mLastNameWrapper.setError(null);
+                mEmailRegisterWrapper.setError(null);
+                mPasswordRegisterWrapper.setError(null);
+
+                if (!validateName(name) || !validateName(last_name) || !validateEmail(email) || validatePassword(password)) {
+                    if (!validateName(name)) {
+                        mNameWrapper.setError("Invalid Name");
+                    }
+                    if (!validateName(last_name)) {
+                        mLastNameWrapper.setError("Invalid Last Name");
+                    }
+                    if (!validateEmail(email)) {
+                        mEmailRegisterWrapper.setError("Invalid Email");
+                    }
+                    if (!validatePassword(password)) {
+                        mPasswordRegisterWrapper.setError("Invalid Password");
+                    }
+                }
+//                else{
+//                    //Valid Name, Last Name, Email, Password
+//
+//                }
+
             }
         });
 
