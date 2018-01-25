@@ -160,7 +160,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/passwordWrapperSignUp" />
 
             <TextView
-                android:id="@id/textViewRegistered"
+                android:id="@+id/textViewRegistered"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"

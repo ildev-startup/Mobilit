@@ -20,7 +20,7 @@ public class Validator {
 
     // Method that checks if the String Email matches with the EMAIL_PATTERN
     public static boolean validateEmail(String email){
-        return Pattern.matches(EMAIL_PATTERN, email);
+        return email.matches(EMAIL_PATTERN);
     }
 
     // Method that checks if the Password has more than 5 digits
@@ -28,7 +28,8 @@ public class Validator {
         return password.length() >= MIN_CHARACTERS;
     }
 
-    public static boolean validateName(String name) {
+    // Methos that checks if the String Name matches with NAME_PATTERN
+    public static boolean validateName(String name){
         return name.matches(NAME_PATTERN);
     }
 }

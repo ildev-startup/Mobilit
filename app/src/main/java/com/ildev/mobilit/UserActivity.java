@@ -18,6 +18,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.ildev.mobilit.utils.User;
 
 import static com.ildev.mobilit.utils.Validator.validateEmail;
 import static com.ildev.mobilit.utils.Validator.validateName;
@@ -28,11 +32,14 @@ public class UserActivity extends AppCompatActivity {
     // Declaration of Variables
     private Button mButtonSignIn, mButtonSingUp;
     private ConstraintLayout mSignInCL, mSignUpCL;
+    private DatabaseReference mDatabase;
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
     private TextInputLayout mEmailWrapper, mPasswordWrapper;   //Singin Variables
     private TextInputLayout mNameWrapper, mLastNameWrapper, mEmailRegisterWrapper, mPasswordRegisterWrapper; //SingUp Variables
     private FirebaseAuth auth = FirebaseAuth.getInstance();
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+    private final static String TAG = "UserActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +62,8 @@ public class UserActivity extends AppCompatActivity {
         mLastNameWrapper = (TextInputLayout) findViewById(R.id.lastNameWrapper);
         mEmailRegisterWrapper = (TextInputLayout) findViewById(R.id.emailRegisterWrapperSignUp);
         mPasswordRegisterWrapper = (TextInputLayout) findViewById(R.id.passwordWrapperSignUp);
+        // Database references
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         // Setting hints
         mEmailWrapper.setHint(getString(R.string.email));
@@ -118,8 +127,8 @@ public class UserActivity extends AppCompatActivity {
                 hideKeyboard(); //Hiding the Keyboard
 
                 //Getting name, last name, email and password
-                String name  = mNameWrapper.getEditText().getText().toString();
-                String last_name = mLastNameWrapper.getEditText().getText().toString();
+                final String name  = mNameWrapper.getEditText().getText().toString();
+                final String last_name = mLastNameWrapper.getEditText().getText().toString();
                 final String email = mEmailRegisterWrapper.getEditText().getText().toString();
                 String password = mPasswordRegisterWrapper.getEditText().getText().toString();
 
@@ -143,33 +152,39 @@ public class UserActivity extends AppCompatActivity {
                         mPasswordRegisterWrapper.setError("Invalid Password");
                     }
                 }
-//                else{
-//                    //Valid Name, Last Name, Email, Password
-//                    mAuth.createUserWithEmailAndPassword(email, password)
-//                            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                                @Override
-//                                public void onComplete(@NonNull Task<AuthResult> task) {
-//                                    if (task.isSuccessful()) {
-//                                        // Sign in success, update UI with the signed-in user's information
-//                                        Log.d(TAG, "createUserWithEmail:success");
-//                                        FirebaseUser user = mAuth.getCurrentUser();
-//                                        updateUI(user);
-//                                    } else {
-//                                        // If sign in fails, display a message to the user.
-//                                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
-//                                        Toast.makeText(EmailPasswordActivity.this, "Authentication failed.",
-//                                                Toast.LENGTH_SHORT).show();
-//                                        updateUI(null);
-//                                    }
-//
-//                                    // ...
-//                                }
-//                            });
-//                }
+                else{
+                    // Valid Name, Last Name, Email, Password
+                    mAuth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(UserActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    /**
+                                     * If success in creating the new User, we register it into the Database.
+                                     * Otherwise, it failed and we must deal with it
+                                     */
+                                    if(!task.isSuccessful()){
+                                        // Task failed in creating the new user
+
+                                    }else{
+                                        // Task succeed in creating the new user
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        String Uid = user.getUid();
+                                        writeNewUser(Uid, new User(name, last_name, email));
+                                    }
+                                }
+                            });
+                }
 
             }
         });
 
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        // Checks if user is signed in (non-null) and update UI accordiingly
+        FirebaseUser currentUser = mAuth.getCurrentUser();
     }
 
     /**
@@ -231,5 +246,11 @@ public class UserActivity extends AppCompatActivity {
         return (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, dp, getResources()
                         .getDisplayMetrics());
+    }
+
+    // Writing to Database
+    private void writeNewUser(String Uid, User user){
+
+        mDatabase.child("users").child(Uid).setValue(user);
     }
 }
