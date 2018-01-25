@@ -32,6 +32,7 @@ public class UserActivity extends AppCompatActivity {
     private TextInputLayout mEmailWrapper, mPasswordWrapper;   //Singin Variables
     private TextInputLayout mNameWrapper, mLastNameWrapper, mEmailRegisterWrapper, mPasswordRegisterWrapper; //SingUp Variables
     private FirebaseAuth auth = FirebaseAuth.getInstance();
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +129,7 @@ public class UserActivity extends AppCompatActivity {
                 mEmailRegisterWrapper.setError(null);
                 mPasswordRegisterWrapper.setError(null);
 
-                if (!validateName(name) || !validateName(last_name) || !validateEmail(email) || validatePassword(password)) {
+                if (!validateName(name) || !validateName(last_name) || !validateEmail(email) || !validatePassword(password)) {
                     if (!validateName(name)) {
                         mNameWrapper.setError("Invalid Name");
                     }
@@ -144,7 +145,26 @@ public class UserActivity extends AppCompatActivity {
                 }
 //                else{
 //                    //Valid Name, Last Name, Email, Password
+//                    mAuth.createUserWithEmailAndPassword(email, password)
+//                            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+//                                @Override
+//                                public void onComplete(@NonNull Task<AuthResult> task) {
+//                                    if (task.isSuccessful()) {
+//                                        // Sign in success, update UI with the signed-in user's information
+//                                        Log.d(TAG, "createUserWithEmail:success");
+//                                        FirebaseUser user = mAuth.getCurrentUser();
+//                                        updateUI(user);
+//                                    } else {
+//                                        // If sign in fails, display a message to the user.
+//                                        Log.w(TAG, "createUserWithEmail:failure", task.getException());
+//                                        Toast.makeText(EmailPasswordActivity.this, "Authentication failed.",
+//                                                Toast.LENGTH_SHORT).show();
+//                                        updateUI(null);
+//                                    }
 //
+//                                    // ...
+//                                }
+//                            });
 //                }
 
             }
