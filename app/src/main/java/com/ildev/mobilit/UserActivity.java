@@ -1,6 +1,7 @@
 package com.ildev.mobilit;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -35,7 +37,7 @@ import static com.ildev.mobilit.utils.Validator.validatePassword;
 public class UserActivity extends AppCompatActivity {
 
     // Declaration of Variables
-    private Button mButtonSignIn, mButtonSingUp;
+    private Button mButtonSignIn, mButtonSignUp;
     private ConstraintLayout mSignInCL, mSignUpCL;
     private CollectionReference mCollectionRef;
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
@@ -55,7 +57,7 @@ public class UserActivity extends AppCompatActivity {
 
         // Getting the references to the UI Elements
         mButtonSignIn = (Button) findViewById(R.id.ButtonSignIn);
-        mButtonSingUp = (Button) findViewById(R.id.ButtonSignUp);
+        mButtonSignUp = (Button) findViewById(R.id.ButtonSignUp);
         mSignInCL = (ConstraintLayout) findViewById(R.id.signInConstraintLayout);
         mSignUpCL = (ConstraintLayout) findViewById(R.id.signUpConstraintLayout);
         mTextViewForgotPassword = (TextView) findViewById(R.id.textViewForgotPassword);
@@ -132,7 +134,7 @@ public class UserActivity extends AppCompatActivity {
             }
         });
         // Setting SingUp Button
-        mButtonSingUp.setOnClickListener(new View.OnClickListener() {
+        mButtonSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 hideKeyboard(); //Hiding the Keyboard
@@ -213,6 +215,9 @@ public class UserActivity extends AppCompatActivity {
             }
         });
 
+        // Setting Touch Listeners
+        mButtonSignIn.setOnTouchListener(onTouchListener);
+        mButtonSignUp.setOnTouchListener(onTouchListener);
     }
 
     @Override
@@ -241,6 +246,24 @@ public class UserActivity extends AppCompatActivity {
         }
     }
 
+    // Touch Listener to the view
+    View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            /**
+             * We override the onTouch method to the view that has this
+             * TouchListener. Since we're gonna apply it to change the colors of buttons,
+             * then we're gonna use ACTION_DOWN and ACTION_DOWN identifiers
+             */
+            Button btn = (Button) view; // We cast the view to a button
+            if(motionEvent.getAction() == motionEvent.ACTION_DOWN){
+                btn.setBackgroundResource(R.drawable.btn_rectangle_dark);
+            }else if(motionEvent.getAction() == motionEvent.ACTION_UP){
+                btn.setBackgroundResource(R.drawable.btn_rectangle_light);
+            }
+            return false;
+        }
+    };
     // Method that set visible the SignUp UI
     private void setSignUp(){
         // SignIn ConstraintLayout Gone
