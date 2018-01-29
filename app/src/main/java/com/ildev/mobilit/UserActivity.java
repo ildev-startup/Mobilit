@@ -1,6 +1,7 @@
 package com.ildev.mobilit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
@@ -15,8 +16,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -40,6 +47,8 @@ public class UserActivity extends AppCompatActivity {
     private Button mButtonSignIn, mButtonSignUp;
     private ConstraintLayout mSignInCL, mSignUpCL;
     private CollectionReference mCollectionRef;
+    private GoogleSignInClient mGoogleSignInClient;
+    private ImageButton  mButtonGoogle, mButtonFacebook, mButtonTwitter;
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
     private TextInputLayout mEmailWrapper, mPasswordWrapper;   //Singin Variables
     private TextInputLayout mNameWrapper, mLastNameWrapper, mEmailRegisterWrapper, mPasswordRegisterWrapper; //SingUp Variables
@@ -49,20 +58,24 @@ public class UserActivity extends AppCompatActivity {
     private final static String NAME_KEY = "name";
     private final static String LNAME_KEY = "lname";
     private  final static String EMAIL_KEY = "email";
+    private static final int RC_SIGN_IN = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
 
-        // Getting the references to the UI Elements
-        mButtonSignIn = (Button) findViewById(R.id.ButtonSignIn);
-        mButtonSignUp = (Button) findViewById(R.id.ButtonSignUp);
+        // ConstraintLayout References
         mSignInCL = (ConstraintLayout) findViewById(R.id.signInConstraintLayout);
         mSignUpCL = (ConstraintLayout) findViewById(R.id.signUpConstraintLayout);
-        mTextViewForgotPassword = (TextView) findViewById(R.id.textViewForgotPassword);
-        mTextViewSignIn = (TextView) findViewById(R.id.textViewSignIn);
-        mTextViewSignUp = (TextView) findViewById(R.id.textViewSignUp);
+        // Button References
+        mButtonSignIn = (Button) findViewById(R.id.ButtonSignIn);
+        mButtonSignUp = (Button) findViewById(R.id.ButtonSignUp);
+        // ImageButtons References
+        mButtonGoogle = (ImageButton) findViewById(R.id.imageButtonGoogle);
+        mButtonFacebook = (ImageButton) findViewById(R.id.imageButtonFacebook);
+        mButtonTwitter = (ImageButton) findViewById(R.id.imageButtonTwitter);
         //SingIn references
         mEmailWrapper = (TextInputLayout) findViewById(R.id.emailWrapper);
         mPasswordWrapper = (TextInputLayout) findViewById(R.id.passwordWrapper);
@@ -71,9 +84,17 @@ public class UserActivity extends AppCompatActivity {
         mLastNameWrapper = (TextInputLayout) findViewById(R.id.lastNameWrapper);
         mEmailRegisterWrapper = (TextInputLayout) findViewById(R.id.emailRegisterWrapperSignUp);
         mPasswordRegisterWrapper = (TextInputLayout) findViewById(R.id.passwordWrapperSignUp);
+        // TextView References
+        mTextViewForgotPassword = (TextView) findViewById(R.id.textViewForgotPassword);
+        mTextViewSignIn = (TextView) findViewById(R.id.textViewSignIn);
+        mTextViewSignUp = (TextView) findViewById(R.id.textViewSignUp);
         // Database references
         mCollectionRef = FirebaseFirestore.getInstance().collection("users");
-
+        // Google's stuff
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build(); // Google Sign In Options requesting Email
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso); // Google Sign In Client
         // Setting hints
         mEmailWrapper.setHint(getString(R.string.email));
         mPasswordWrapper.setHint(getString(R.string.password));
@@ -117,14 +138,17 @@ public class UserActivity extends AppCompatActivity {
                                      */
                                     if(!task.isSuccessful()){
                                         // Failing in doing the Login
-                                        // TODO: Task failing logic
                                         Log.e("UserActivity", "Error in authenticating the email " + email);
-                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Error in doing the login", Snackbar.LENGTH_SHORT);
+                                        // Cleaning up the Password EditTextField
+                                        mPasswordWrapper.getEditText().setText(null);
+                                        // Showing message to the user
+                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Error in the email/password combination", Snackbar.LENGTH_SHORT);
                                         snack.show();
                                     } else{
                                         // Succesfully done the Login
-                                        // TODO: Task succesfully done logic
                                         Log.v("UserActivity", "Success in authenticating the email " + email);
+                                        // Provisory Message
+                                        // TODO: Clean up the Snackbar message when the change betweens activities are completed
                                         Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"User " +email+ " successfully authenticated", Snackbar.LENGTH_SHORT);
                                         snack.show();
                                     }
@@ -176,17 +200,21 @@ public class UserActivity extends AppCompatActivity {
                                      * Otherwise, it failed and we must deal with it
                                      */
                                     if(!task.isSuccessful()){
-                                        // Task failed in creating the new user
-
+                                        // Task failed in creating the new user, so we clean up the Password
+                                        mPasswordRegisterWrapper.getEditText().setText(null);
+                                        // And show a message to the user
+                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "Email already registered", Snackbar.LENGTH_LONG);
+                                        snack.show();
                                     }else{
                                         // Task succeed in creating the new user
                                         FirebaseUser user = auth.getCurrentUser();
-                                        String Uid = user.getUid();
+                                        String Uid = user.getUid(); // User ID
                                         // Data to save
                                         Map<String, Object> dataToSave = new HashMap<String, Object>();
                                         dataToSave.put(NAME_KEY, name);
                                         dataToSave.put(LNAME_KEY, last_name);
                                         dataToSave.put(EMAIL_KEY, email);
+
                                         mCollectionRef.document(Uid)
                                                 .set(dataToSave)
                                                 .addOnSuccessListener(new OnSuccessListener<Void>(){
@@ -194,7 +222,7 @@ public class UserActivity extends AppCompatActivity {
                                                     @Override
                                                     public void onSuccess(Void aVoid) {
                                                         Log.d(TAG, "User document has been saved");
-                                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Succesfully registered, thanks :D", Snackbar.LENGTH_SHORT);
+                                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Succesfully registered, thanks :D", Snackbar.LENGTH_LONG);
                                                         snack.show();
                                                     }
                                                 })
@@ -203,7 +231,7 @@ public class UserActivity extends AppCompatActivity {
                                                     @Override
                                                     public void onFailure(@NonNull Exception e) {
                                                         Log.e(TAG, "Error writing the document", e);
-                                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Unable to register the user: " + e.getMessage(), Snackbar.LENGTH_SHORT);
+                                                        Snackbar snack = Snackbar.make(findViewById(android.R.id.content),"Unable to register the user: " + e.getMessage(), Snackbar.LENGTH_LONG);
                                                         snack.show();
                                                     }
                                         });
@@ -218,6 +246,35 @@ public class UserActivity extends AppCompatActivity {
         // Setting Touch Listeners
         mButtonSignIn.setOnTouchListener(onTouchListener);
         mButtonSignUp.setOnTouchListener(onTouchListener);
+
+        // Google's Button onClick Listener
+        mButtonGoogle.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                // Getting SignIn Intent
+                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                startActivityForResult(signInIntent, RC_SIGN_IN);
+            }
+        });
+
+        // Facebook's Button onClick Listener
+        mButtonFacebook.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
+        // Twitter's Button onCLick Listener
+        mButtonTwitter.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
     }
 
     @Override
@@ -225,9 +282,24 @@ public class UserActivity extends AppCompatActivity {
         super.onStart();
         // Checks if user is signed in (non-null) and update UI accordiingly
         FirebaseUser currentUser = auth.getCurrentUser();
-
+        // Check for GoogleSignInAccount, if the user is already signed in, the result will be not-null
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+        if(requestCode == RC_SIGN_IN){
+            /**
+             * The Task returned from this call is always completed, no need to attach a listener.
+             */
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+
+        }
+    }
     /**
      * OnClick Method to either SignIn and SignUp textViews
      */
@@ -307,5 +379,22 @@ public class UserActivity extends AppCompatActivity {
                         .getDisplayMetrics());
     }
 
+    // Function that handles with the task of the GoogleSignInAccount
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
+            // Signed in successfully, show authenticated UI.
+            // updateUI(account);
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "Succesfully loged in with Google", Snackbar.LENGTH_LONG);
+            snack.show();
+        } catch (ApiException e) {
+            // The ApiException status code indicates the detailed failure reason.
+            // Please refer to the GoogleSignInStatusCodes class reference for more information.
+            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+            // updateUI(null);
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "Unable to login with Google", Snackbar.LENGTH_LONG);
+            snack.show();
+        }
+    }
 }
