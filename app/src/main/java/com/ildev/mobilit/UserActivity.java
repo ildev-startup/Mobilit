@@ -19,6 +19,12 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -29,11 +35,13 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,10 +53,12 @@ public class UserActivity extends AppCompatActivity {
 
     // Declaration of Variables
     private Button mButtonSignIn, mButtonSignUp;
+    private CallbackManager callbackManager;
     private ConstraintLayout mSignInCL, mSignUpCL;
     private CollectionReference mCollectionRef;
-    private GoogleSignInClient mGoogleSignInClient;
+    private GoogleSignInClient mGoogleSignInClient; // Google's Sign In Client
     private ImageButton  mButtonGoogle, mButtonFacebook, mButtonTwitter;
+    private LoginManager mFbLoginManager; // Facebook's Login Manager
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
     private TextInputLayout mEmailWrapper, mPasswordWrapper;   //Singin Variables
     private TextInputLayout mNameWrapper, mLastNameWrapper, mEmailRegisterWrapper, mPasswordRegisterWrapper; //SingUp Variables
@@ -98,6 +108,10 @@ public class UserActivity extends AppCompatActivity {
         // Setting hints
         mEmailWrapper.setHint(getString(R.string.email));
         mPasswordWrapper.setHint(getString(R.string.password));
+        // Facebook's Stuff
+        LoginManager fbLoginManager = LoginManager.getInstance();
+        callbackManager = CallbackManager.Factory.create();
+        mFbLoginManager = LoginManager.getInstance(); // TODO: Verify the existence of a better approach, if exists
 
         // Setting SignIn Button ActionListener
         mButtonSignIn.setOnClickListener(new View.OnClickListener() {
@@ -247,7 +261,9 @@ public class UserActivity extends AppCompatActivity {
         mButtonSignIn.setOnTouchListener(onTouchListener);
         mButtonSignUp.setOnTouchListener(onTouchListener);
 
-        // Google's Button onClick Listener
+        /**
+         * Google's Button OnCLickListener
+         */
         mButtonGoogle.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -258,16 +274,46 @@ public class UserActivity extends AppCompatActivity {
             }
         });
 
-        // Facebook's Button onClick Listener
+        /**
+         * Facebook's Login
+         */
+        // Login Manager
+        mFbLoginManager.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                // Some code here
+                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Loged in with Facebook", Snackbar.LENGTH_LONG);
+                snackbar.show();
+            }
+
+            @Override
+            public void onCancel() {
+                // Canceled in Login with Facebook
+                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Login with Facebook was canceled", Snackbar.LENGTH_LONG);
+                snackbar.show();
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                // Error in performing the Login with Facebook
+                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Error in performing the login " +error.getMessage(), Snackbar.LENGTH_LONG);
+                snackbar.show();
+            }
+        });
+
+        // Facebook Button
         mButtonFacebook.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-
+                mFbLoginManager.logInWithReadPermissions(UserActivity.this, Arrays.asList("user_photos", "email", "user_birthday"));
             }
         });
 
-        // Twitter's Button onCLick Listener
+        /**
+         * Twitter's Button OnClickListener
+         */
         mButtonTwitter.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -284,6 +330,8 @@ public class UserActivity extends AppCompatActivity {
         FirebaseUser currentUser = auth.getCurrentUser();
         // Check for GoogleSignInAccount, if the user is already signed in, the result will be not-null
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        // Check if user is signed in with Facebook (non-null Access Token)
+        AccessToken tokenFB = AccessToken.getCurrentAccessToken();
     }
 
     @Override
@@ -299,6 +347,7 @@ public class UserActivity extends AppCompatActivity {
             handleSignInResult(task);
 
         }
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
     /**
      * OnClick Method to either SignIn and SignUp textViews
