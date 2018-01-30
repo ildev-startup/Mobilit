@@ -40,6 +40,14 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthToken;
+import com.twitter.sdk.android.core.TwitterCore;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterAuthClient;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,6 +70,7 @@ public class UserActivity extends AppCompatActivity {
     private TextView mTextViewSignUp, mTextViewSignIn, mTextViewForgotPassword;
     private TextInputLayout mEmailWrapper, mPasswordWrapper;   //Singin Variables
     private TextInputLayout mNameWrapper, mLastNameWrapper, mEmailRegisterWrapper, mPasswordRegisterWrapper; //SingUp Variables
+    private TwitterAuthClient mTwitterAuthClient; // Twitter's Authentication Client
     private FirebaseAuth auth = FirebaseAuth.getInstance();
 
     private final static String TAG = "UserActivity";
@@ -75,6 +84,7 @@ public class UserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
+        Twitter.initialize(this); // Twitter's kit initialization
 
         // ConstraintLayout References
         mSignInCL = (ConstraintLayout) findViewById(R.id.signInConstraintLayout);
@@ -112,6 +122,9 @@ public class UserActivity extends AppCompatActivity {
         LoginManager fbLoginManager = LoginManager.getInstance();
         callbackManager = CallbackManager.Factory.create();
         mFbLoginManager = LoginManager.getInstance(); // TODO: Verify the existence of a better approach, if exists
+        // Twitter's Stuff
+        mTwitterAuthClient = new TwitterAuthClient();
+
 
         // Setting SignIn Button ActionListener
         mButtonSignIn.setOnClickListener(new View.OnClickListener() {
@@ -319,6 +332,20 @@ public class UserActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+                mTwitterAuthClient.authorize(UserActivity.this, new Callback<TwitterSession>() {
+                    @Override
+                    public void success(Result<TwitterSession> result) {
+                        // Success
+                        // TODO: Uns bagulhos aqui que to com preguiça, mas ok, ja deve estar funfando
+                    }
+
+                    @Override
+                    public void failure(TwitterException exception) {
+                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Unable to login with Twitter: " + exception.getMessage(), Snackbar.LENGTH_LONG);
+                        snackbar.show();
+                    }
+                });
+
             }
         });
     }
@@ -332,6 +359,7 @@ public class UserActivity extends AppCompatActivity {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         // Check if user is signed in with Facebook (non-null Access Token)
         AccessToken tokenFB = AccessToken.getCurrentAccessToken();
+        // Check if user is signed in with Twitter (non-null User Token)
     }
 
     @Override
@@ -348,6 +376,7 @@ public class UserActivity extends AppCompatActivity {
 
         }
         callbackManager.onActivityResult(requestCode, resultCode, data);
+        mTwitterAuthClient.onActivityResult(requestCode, resultCode, data);
     }
     /**
      * OnClick Method to either SignIn and SignUp textViews

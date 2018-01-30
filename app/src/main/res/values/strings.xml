@@ -16,4 +16,6 @@
     <string name="logIn">Or Log In with</string>
     <string name="facebook_app_id">154834031838581</string>
     <string name="fb_login_protocol_scheme">fb154834031838581</string>
+    <string name="com.twitter.sdk.android.CONSUMER_KEY">4rkaffjm9TiohWcEr7rjsjp74</string>
+    <string name="com.twitter.sdk.android.CONSUMER_SECRET">W1cmCY2u4xST63yikqBl6rXeRqazC8yBKsNDH2gVfYJnVvgRNR</string>
 </resources>
